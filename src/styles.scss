@@ -9,6 +9,16 @@
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
+  // Ipotesi verificata: quasi tutto nella pagina (inclusi i div interni
+  // dei widget DevExtreme) ha user-select: auto, non none. Cliccare
+  // fuori da un campo per fargli perdere il focus atterra quindi spesso
+  // su testo normale selezionabile, e il click crea lì un punto di
+  // selezione zero-length (confermato con window.getSelection().type
+  // === "Caret" dopo il blur) — plausibile causa del cursore fantasma
+  // segnalato sul campo "Titolo nuovo task". `user-select: text` resta
+  // sugli input veri: DevExtreme lo dichiara già esplicitamente su
+  // `.dx-texteditor-input`, una regola più specifica vince su questa.
+  user-select: none;
 }
 
 .page {
