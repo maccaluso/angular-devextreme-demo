@@ -16,3 +16,15 @@ body {
   margin: 0 auto;
   padding: 1.5rem;
 }
+
+// Tab attivo nella nav (dx-tabs, vedi app.html): DevExtreme marca il tab
+// selezionato con `.dx-tab-selected` (verificato sul markup renderizzato,
+// non dedotto dai type), ma lo stile di default è solo un cambio di
+// sfondo — troppo debole su pochi tab. Anche questo sta qui in globale,
+// non in app.scss: gli elementi generati da dx-tabs non hanno l'attributo
+// _ngcontent di Angular, quindi lo scoping di ViewEncapsulation.Emulated
+// non li raggiungerebbe.
+.dx-tab-selected .dx-tab-text {
+  font-weight: 700;
+  color: #337ab7; // stesso blu del bottone "Aggiungi task" (type="default")
+}
