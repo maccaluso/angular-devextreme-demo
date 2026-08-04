@@ -29,7 +29,7 @@
                 "input": "public"
               }
             ],
-            "styles": ["node_modules/devextreme/dist/css/dx.light.css", "src/styles.scss"]
+            "styles": ["src/theme.scss", "src/styles.scss"]
           },
           "configurations": {
             "production": {

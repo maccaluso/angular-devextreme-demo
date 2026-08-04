@@ -1,0 +1,49 @@
+// Tema DevExtreme costruito dalla sorgente SCSS (non più il CSS
+// precompilato node_modules/devextreme/dist/css/dx.light.css) proprio
+// per poter personalizzare via VARIABILI di tema invece di scrivere
+// regole CSS ex novo che poi litigano in specificità con quelle del
+// tema stesso (è quello che succedeva prima con il colore del tab
+// selezionato: la nostra regola perdeva contro una regola più
+// specifica del tema).
+//
+// Sass "@use ... with (...)" configura un modulo SOLO alla sua prima
+// importazione in tutta la compilazione — per questo qui sotto si
+// importano a mano, in ordine, gli stessi file che importerebbe
+// "devextreme/scss/bundles/dx.light.scss", ma intercettando "colors" e
+// "tabs/variables/colors" con la nostra configurazione PRIMA che il
+// resto del tema li usi (senza "with") e ne riceva così i valori già
+// configurati. Non si può semplicemente fare
+// `@use "devextreme/scss/bundles/dx.light" with (...)`: quel bundle
+// configura già "colors" al suo interno, e Sass vieta di configurare
+// lo stesso modulo due volte.
+@use 'devextreme/scss/widgets/generic/colors' with (
+  $color: 'light',
+);
+@use 'devextreme/scss/widgets/generic/sizes' with (
+  // "tabs/variables/colors" qui sotto dipende internamente da "sizes"
+  // (per calcolare i padding) — va configurato PRIMA di lui, altrimenti
+  // "sizes" viene caricato senza configurazione dal suo `@use` interno
+  // e i calcoli su variabili numeriche null falliscono in compilazione.
+  $size: 'default',
+);
+// "as tabs-colors": senza un alias esplicito Sass userebbe di default
+// il namespace "colors" (ultimo pezzo del path) — già preso da
+// "widgets/generic/colors" qui sopra, stesso nome di file. Non ci serve
+// comunque riferirci al namespace, è solo per configurare il modulo.
+@use 'devextreme/scss/widgets/generic/tabs/variables/colors' as tabs-colors with (
+  // Di base, nel tema "light", il testo del tab selezionato resta
+  // $base-text-color (nero-ish) — il tema non lo lega a $base-accent.
+  // Qui lo alliniamo esplicitamente all'accent del tema (stesso blu
+  // del bottone "Aggiungi task", #337ab7 di default per "light").
+  $tabs-tab-selected-color: #337ab7,
+);
+@use 'devextreme/scss/widgets/generic/typography';
+@use 'devextreme/scss/widgets/generic/icons';
+@use 'devextreme/scss/widgets/generic/widget';
+@use 'devextreme/scss/widgets/generic/card';
+@use 'devextreme/scss/widgets/generic/fieldset';
+@use 'devextreme/scss/widgets/generic/common';
+@use 'devextreme/scss/widgets/base/resizable';
+@use 'devextreme/scss/widgets/base/draggable';
+@use 'devextreme/scss/widgets/base/ui';
+@use 'devextreme/scss/widgets/generic';
