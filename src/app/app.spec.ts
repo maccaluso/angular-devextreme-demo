@@ -1,10 +1,13 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
+import { routes } from './app.routes';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [provideRouter(routes)],
     }).compileComponents();
   });
 
@@ -14,28 +17,22 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render the title and the DataGrid/Chart widgets', async () => {
+  it('should render the title and a nav tab per route', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('demo DevExtreme');
-    expect(compiled.querySelector('dx-data-grid')).toBeTruthy();
-    expect(compiled.querySelector('dx-chart')).toBeTruthy();
+    expect(compiled.querySelectorAll('.dx-tab').length).toBe(2);
   });
 
-  it('addTask() appends a task with the chosen priority and resets the title', () => {
+  it('onTabClick() navigates to the clicked tab\'s path', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
-    const initialCount = app['tasks']().length;
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate');
 
-    app['newTitle'].set('Nuovo task di prova');
-    app['newPriority'].set('high');
-    app['addTask']();
+    app['onTabClick']({ itemData: { text: 'Utenti', path: 'users' } } as never);
 
-    const tasks = app['tasks']();
-    expect(tasks.length).toBe(initialCount + 1);
-    expect(tasks.at(-1)?.title).toBe('Nuovo task di prova');
-    expect(tasks.at(-1)?.priority).toBe('high');
-    expect(app['newTitle']()).toBe('');
+    expect(navigateSpy).toHaveBeenCalledWith(['users']);
   });
 });

@@ -1,1 +1,18 @@
 /* You can add global styles to this file, and also import other style files */
+
+// `.page` è il contenitore condiviso da header e dalle pagine instradate
+// (TaskBoard, Users): sta qui in globale, non nello scss di un singolo
+// componente, perché ViewEncapsulation.Emulated (il default) scopre gli
+// stili di ogni componente ai propri elementi — un `.page` scritto in
+// app.scss non raggiungerebbe il markup dentro <router-outlet>, che
+// appartiene al template di un componente diverso.
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}

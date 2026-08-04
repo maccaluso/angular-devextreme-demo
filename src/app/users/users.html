@@ -1,0 +1,31 @@
+<section class="page">
+  <header class="users__header">
+    <h2>Utenti</h2>
+    <p>Le stesse persone che compaiono come "Assegnatario" nella Task Board, qui come schede.</p>
+  </header>
+
+  <!--
+    dx-card-view: come dx-data-grid ma pensato per un layout "a schede"
+    invece che tabellare — stesso concetto di dataSource, stesso keyExpr
+    per identificare ogni record. `cardsPerRow` è responsivo: un numero
+    fisso o una mappa per breakpoint (qui teniamo semplice, fisso).
+
+    Il contesto del template (`user` qui sotto) NON è il record grezzo:
+    è `{ card: {...} }`, dove `card` è l'oggetto interno del widget con
+    shape { data, fields, key, ... } e `data` è il nostro UserProfile
+    originale — verificato leggendo il sorgente del widget dopo un crash
+    reale in test (prima `user.name` undefined, poi `user.data` stesso
+    undefined: mancava un intero livello di annidamento, `card`). Il
+    widget chiama il template anche per una passata di misurazione
+    layout senza un `card`/`data` vero, da qui l'optional chaining.
+  -->
+  <dx-card-view [dataSource]="users" keyExpr="id" [cardsPerRow]="3" [cardMinWidth]="220" cardTemplate="card">
+    <div *dxTemplate="let user of 'card'" class="user-card">
+      <div class="user-card__avatar" [style.background]="user.card?.data?.color">
+        {{ initialOf(user.card?.data?.name) }}
+      </div>
+      <p class="user-card__name">{{ user.card?.data?.name }}</p>
+      <p class="user-card__role">{{ user.card?.data?.role }}</p>
+    </div>
+  </dx-card-view>
+</section>

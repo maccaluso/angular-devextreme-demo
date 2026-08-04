@@ -1,111 +1,54 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map, startWith } from 'rxjs';
 
-// Ogni componente DevExtreme Angular è una classe standalone separata,
-// da importare direttamente nell'array `imports` — non serve nessun
-// NgModule (DxDataGridModule & co. sono la vecchia API pre-standalone).
-import { DxDataGridComponent } from 'devextreme-angular/ui/data-grid';
-// Le opzioni "annidate" (colonne, paging, filtri...) sono anch'esse
-// componenti standalone separati, con selettore <dxi-...>/<dxo-...>.
-// ATTENZIONE: da questa versione (26.x) i selettori sono namespaced per
-// widget — `dxi-data-grid-column`, non il vecchio `dxi-column` — proprio
-// per evitare collisioni quando importi le nested option di più widget
-// diversi (es. data-grid E tree-list) nello stesso componente standalone.
-// Verificato leggendo i bundle compilati in node_modules, non a memoria.
-import {
-  DxiDataGridColumnComponent,
-  DxiDataGridTotalItemComponent,
-  DxoDataGridExportComponent,
-  DxoDataGridFilterRowComponent,
-  DxoDataGridGroupingComponent,
-  DxoDataGridGroupPanelComponent,
-  DxoDataGridPagingComponent,
-  DxoDataGridSearchPanelComponent,
-  DxoDataGridSummaryComponent,
-} from 'devextreme-angular/ui/data-grid/nested';
+import { DxTabsComponent } from 'devextreme-angular/ui/tabs';
+// Solo il TIPO dell'evento: import type non genera nessun import a
+// runtime (viene cancellato in fase di compilazione), quindi non ha
+// nulla a che fare con i problemi di risoluzione ESM visti altrove nel
+// progetto per gli import "veri" di devextreme-angular.
+import type { ItemClickEvent } from 'devextreme/ui/tabs';
 
-import { DxChartComponent } from 'devextreme-angular/ui/chart';
-import {
-  DxiChartSeriesComponent,
-  DxoChartArgumentAxisComponent,
-  DxoChartCommonSeriesSettingsComponent,
-  DxoChartLegendComponent,
-} from 'devextreme-angular/ui/chart/nested';
+interface NavItem {
+  text: string;
+  path: string;
+}
 
-import { DxTextBoxComponent } from 'devextreme-angular/ui/text-box';
-import { DxSelectBoxComponent } from 'devextreme-angular/ui/select-box';
-import { DxButtonComponent } from 'devextreme-angular/ui/button';
-
-import { PRIORITIES, SEED_TASKS, STATUSES, Task, TaskPriority } from './task';
+const NAV_ITEMS: NavItem[] = [
+  { text: 'Task Board', path: 'tasks' },
+  { text: 'Utenti', path: 'users' },
+];
 
 @Component({
   selector: 'app-root',
-  imports: [
-    DxDataGridComponent,
-    DxiDataGridColumnComponent,
-    DxiDataGridTotalItemComponent,
-    DxoDataGridExportComponent,
-    DxoDataGridFilterRowComponent,
-    DxoDataGridGroupingComponent,
-    DxoDataGridGroupPanelComponent,
-    DxoDataGridPagingComponent,
-    DxoDataGridSearchPanelComponent,
-    DxoDataGridSummaryComponent,
-    DxChartComponent,
-    DxiChartSeriesComponent,
-    DxoChartArgumentAxisComponent,
-    DxoChartCommonSeriesSettingsComponent,
-    DxoChartLegendComponent,
-    DxTextBoxComponent,
-    DxSelectBoxComponent,
-    DxButtonComponent,
-  ],
+  imports: [RouterOutlet, DxTabsComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
+  private readonly router = inject(Router);
+
   protected readonly title = signal('Task Board — demo DevExtreme');
+  protected readonly navItems = NAV_ITEMS;
 
-  // Stato applicativo "vero": signal Angular, esattamente come nel resto
-  // del ripasso. DevExtreme non impone il proprio state management, si
-  // limita a leggere/scrivere quello che gli passiamo via [dataSource].
-  protected readonly tasks = signal<Task[]>(SEED_TASKS);
+  // Stesso ponte RxJS→Signal (toSignal) già visto nella demo /search del
+  // Task Board originale: qui serve a tenere il tab selezionato nel
+  // dx-tabs sincronizzato con l'URL corrente, `startWith(0)` copre il
+  // render iniziale prima che arrivi il primo NavigationEnd.
+  protected readonly selectedIndex = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => NAV_ITEMS.findIndex((item) => event.urlAfterRedirects.startsWith('/' + item.path))),
+      startWith(0),
+    ),
+    { initialValue: 0 },
+  );
 
-  // Stato locale della mini-form di creazione (toolbar sopra il grafico).
-  protected readonly newTitle = signal('');
-  protected readonly newPriority = signal<TaskPriority>('medium');
-
-  protected readonly priorities = PRIORITIES;
-  protected readonly statuses = STATUSES;
-
-  // Aggregazione calcolata lato Angular con un computed(), NON dal
-  // DataGrid: è un confronto voluto con il `groupIndex` sulla colonna
-  // "Stato" più sotto, che invece fa raggruppare/sommare a DevExtreme
-  // stesso, lato widget. Due modi diversi di ottenere lo stesso tipo di
-  // riepilogo, entrambi legittimi a seconda di dove serve il dato.
-  protected readonly statusCounts = computed(() => {
-    const counts: Record<string, number> = {};
-    for (const status of this.statuses) counts[status.id] = 0;
-    for (const task of this.tasks()) counts[task.status]++;
-    return this.statuses.map((s) => ({ status: s.label, count: counts[s.id] }));
-  });
-
-  protected addTask(): void {
-    const title = this.newTitle().trim();
-    if (!title) return;
-
-    const nextId = Math.max(0, ...this.tasks().map((t) => t.id)) + 1;
-    this.tasks.update((current) => [
-      ...current,
-      {
-        id: nextId,
-        title,
-        assignee: 'Tu',
-        status: 'todo',
-        priority: this.newPriority(),
-        dueDate: new Date(),
-      },
-    ]);
-
-    this.newTitle.set('');
+  // dx-tabs non conosce il Router: gli passiamo solo `text`, la
+  // navigazione vera la facciamo noi nell'handler del click.
+  protected onTabClick(event: ItemClickEvent): void {
+    const item = event.itemData as NavItem | undefined;
+    if (item) this.router.navigate([item.path]);
   }
 }

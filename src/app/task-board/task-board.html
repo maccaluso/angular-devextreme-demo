@@ -1,0 +1,113 @@
+<section class="page">
+  <!--
+    Toolbar di creazione: tre widget DevExtreme diversi, tutti legati agli
+    stessi signal Angular. NOTA: DxTextBoxComponent/DxSelectBoxComponent
+    espongono `value`/`valueChange` come @Input()/@Output() "normali", NON
+    come un model() Angular — quindi niente banana-in-a-box [(value)] su un
+    signal (non è assegnabile). Si scrive esplicito: [value] in lettura,
+    (valueChange) in scrittura verso il signal.
+  -->
+  <section class="toolbar">
+    <dx-text-box
+      class="toolbar__title"
+      placeholder="Titolo nuovo task"
+      [value]="newTitle()"
+      (valueChange)="newTitle.set($event)"
+    ></dx-text-box>
+
+    <dx-select-box
+      class="toolbar__priority"
+      [items]="priorities"
+      valueExpr="id"
+      displayExpr="label"
+      [value]="newPriority()"
+      (valueChange)="newPriority.set($event)"
+    ></dx-select-box>
+
+    <dx-button
+      text="Aggiungi task"
+      type="default"
+      stylingMode="contained"
+      (onClick)="addTask()"
+    ></dx-button>
+  </section>
+
+  <!--
+    Grafico: la dataSource arriva da un computed() calcolato lato Angular
+    (statusCounts), non da un'aggregazione DevExtreme — vedi il commento
+    su statusCounts in task-board.ts per il confronto con il raggruppamento
+    nativo del DataGrid qui sotto.
+  -->
+  <section class="chart-card">
+    <!--
+      export disabilitato di proposito: senza, il widget prova comunque a
+      sondare i formati canvas supportati (toDataURL) già in fase di init
+      per costruire il menu di export, e jsdom (l'ambiente DOM finto usato
+      dai unit test) non implementa un vero canvas — il test di rendering
+      del componente falliva per questo, non per un bug nostro.
+    -->
+    <dx-chart [dataSource]="statusCounts()" title="Task per stato" [export]="{ enabled: false }">
+      <dxi-chart-series argumentField="status" valueField="count" type="bar"></dxi-chart-series>
+      <dxo-chart-common-series-settings [ignoreEmptyPoints]="true"></dxo-chart-common-series-settings>
+      <dxo-chart-argument-axis [label]="{ visible: true }"></dxo-chart-argument-axis>
+      <dxo-chart-legend [visible]="false"></dxo-chart-legend>
+    </dx-chart>
+  </section>
+
+  <!--
+    DataGrid: qui il raggruppamento (groupIndex sulla colonna Stato) e il
+    riepilogo (dxo-data-grid-summary) sono calcolati dal widget stesso, non
+    da Angular — passiamo solo l'array grezzo `tasks()` come dataSource e
+    DevExtreme si occupa di filtro, ricerca, paging, export, gruppi, somme.
+  -->
+  <section class="grid-card">
+    <dx-data-grid
+      [dataSource]="tasks()"
+      keyExpr="id"
+      [showBorders]="true"
+      [columnAutoWidth]="true"
+      [rowAlternationEnabled]="true"
+    >
+      <dxo-data-grid-search-panel [visible]="true" placeholder="Cerca..."></dxo-data-grid-search-panel>
+      <dxo-data-grid-filter-row [visible]="true"></dxo-data-grid-filter-row>
+      <dxo-data-grid-group-panel [visible]="true"></dxo-data-grid-group-panel>
+      <dxo-data-grid-grouping [autoExpandAll]="true"></dxo-data-grid-grouping>
+      <dxo-data-grid-paging [pageSize]="10"></dxo-data-grid-paging>
+      <dxo-data-grid-export [enabled]="true"></dxo-data-grid-export>
+
+      <dxi-data-grid-column dataField="title" caption="Titolo"></dxi-data-grid-column>
+      <dxi-data-grid-column dataField="assignee" caption="Assegnatario" [width]="140"></dxi-data-grid-column>
+
+      <!--
+        `lookup` traduce il valore grezzo ("todo") in un'etichetta leggibile
+        ("Da fare") sia in cella sia nei filtri — il dato resta in inglese,
+        mostra solo l'etichetta. `groupIndex` fa raggruppare il grid per
+        questa colonna al caricamento (equivalente DevExtreme di un
+        `Array.prototype.reduce` in gruppi, ma gestito interamente dal widget).
+      -->
+      <dxi-data-grid-column
+        dataField="status"
+        caption="Stato"
+        [groupIndex]="0"
+        [lookup]="{ dataSource: statuses, valueExpr: 'id', displayExpr: 'label' }"
+      ></dxi-data-grid-column>
+
+      <dxi-data-grid-column
+        dataField="priority"
+        caption="Priorità"
+        [lookup]="{ dataSource: priorities, valueExpr: 'id', displayExpr: 'label' }"
+      ></dxi-data-grid-column>
+
+      <dxi-data-grid-column
+        dataField="dueDate"
+        caption="Scadenza"
+        dataType="date"
+        format="dd/MM/yyyy"
+      ></dxi-data-grid-column>
+
+      <dxo-data-grid-summary>
+        <dxi-data-grid-total-item column="title" summaryType="count"></dxi-data-grid-total-item>
+      </dxo-data-grid-summary>
+    </dx-data-grid>
+  </section>
+</section>
