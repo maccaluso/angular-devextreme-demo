@@ -29,7 +29,19 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/theme.scss", "src/styles.scss"]
+            "styles": [
+              {
+                "input": "src/theme.scss",
+                "bundleName": "theme-light",
+                "inject": false
+              },
+              {
+                "input": "src/theme-dark.scss",
+                "bundleName": "theme-dark",
+                "inject": false
+              },
+              "src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {

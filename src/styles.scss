@@ -9,6 +9,12 @@
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
+  // Sfondo/testo dalle custom property esposte da theme.scss/
+  // theme-dark.scss (--app-bg/--app-text, a loro volta presi da
+  // $base-bg/$base-text-color del tema) — non un colore nostro: cambia
+  // da solo con qualunque dei due fogli di stile il browser applichi.
+  background: var(--app-bg);
+  color: var(--app-text);
   // Ipotesi verificata: quasi tutto nella pagina (inclusi i div interni
   // dei widget DevExtreme) ha user-select: auto, non none. Cliccare
   // fuori da un campo per fargli perdere il focus atterra quindi spesso

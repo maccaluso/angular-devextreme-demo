@@ -1,5 +1,5 @@
 .users__header p {
-  color: #555;
+  color: var(--app-label);
 }
 
 .user-card {
@@ -18,6 +18,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  // "white" fisso apposta, non legato al tema: è il contrasto contro lo
+  // sfondo colorato assegnato a ciascun utente (user.color in user.ts),
+  // non lo sfondo/testo della pagina — resta bianco sia in light sia in
+  // dark, perché i colori degli avatar non cambiano tra i due temi.
   color: white;
   font-size: 1.4rem;
   font-weight: 600;
@@ -30,6 +34,6 @@
 
 .user-card__role {
   margin: 0;
-  color: #667085;
+  color: var(--app-label);
   font-size: 0.9rem;
 }

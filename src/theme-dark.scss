@@ -1,0 +1,32 @@
+// Tema DevExtreme "dark" — gemello di theme.scss, unica differenza
+// $color: 'dark' nella prima riga (che poi si propaga a tutto il resto:
+// $base-accent, $base-bg, $base-text-color... cambiano di conseguenza).
+// Vedi i commenti in theme.scss per il perché della struttura; qui solo
+// le differenze rilevanti.
+@use 'devextreme/scss/widgets/generic/colors' as colors with (
+  $color: 'dark',
+);
+@use 'devextreme/scss/widgets/generic/sizes' with (
+  $size: 'default',
+);
+@use 'devextreme/scss/widgets/generic/tabs/variables/colors' as tabs-colors with (
+  $tabs-tab-selected-color: colors.$base-accent,
+);
+@use 'devextreme/scss/widgets/generic/typography';
+@use 'devextreme/scss/widgets/generic/icons';
+@use 'devextreme/scss/widgets/generic/widget';
+@use 'devextreme/scss/widgets/generic/card';
+@use 'devextreme/scss/widgets/generic/fieldset';
+@use 'devextreme/scss/widgets/generic/common';
+@use 'devextreme/scss/widgets/base/resizable';
+@use 'devextreme/scss/widgets/base/draggable';
+@use 'devextreme/scss/widgets/base/ui';
+@use 'devextreme/scss/widgets/generic';
+
+:root {
+  --app-bg: #{colors.$base-bg};
+  --app-text: #{colors.$base-text-color};
+  --app-label: #{colors.$base-label-color};
+  --app-border: #{colors.$base-border-color};
+  --app-accent: #{colors.$base-accent};
+}

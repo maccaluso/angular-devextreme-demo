@@ -1,15 +1,14 @@
-// Solo impaginazione: i colori/bordi/font vengono dal tema DevExtreme
-// (node_modules/devextreme/dist/css/dx.light.css, caricato globalmente
-// in angular.json da `ng add devextreme-angular`); il contenitore
-// `.page` condiviso è in src/styles.scss (vedi commento lì).
+// Solo impaginazione: i colori vengono dal tema DevExtreme via le
+// custom property --app-* (vedi theme.scss/theme-dark.scss); il
+// contenitore `.page` condiviso è in src/styles.scss (vedi commento lì).
 
 .app-header {
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--app-border);
   margin-bottom: 1.5rem;
 }
 
 .app-header__inner p {
-  color: #555;
+  color: var(--app-label);
 }
 
 .app-nav {

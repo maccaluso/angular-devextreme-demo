@@ -1,9 +1,9 @@
-// Tema DevExtreme costruito dalla sorgente SCSS (non più il CSS
-// precompilato node_modules/devextreme/dist/css/dx.light.css) proprio
-// per poter personalizzare via VARIABILI di tema invece di scrivere
-// regole CSS ex novo che poi litigano in specificità con quelle del
-// tema stesso (è quello che succedeva prima con il colore del tab
-// selezionato: la nostra regola perdeva contro una regola più
+// Tema DevExtreme "light", costruito dalla sorgente SCSS (non più il
+// CSS precompilato node_modules/devextreme/dist/css/dx.light.css)
+// proprio per poter personalizzare via VARIABILI di tema invece di
+// scrivere regole CSS ex novo che poi litigano in specificità con
+// quelle del tema stesso (è quello che succedeva prima con il colore
+// del tab selezionato: la nostra regola perdeva contro una regola più
 // specifica del tema).
 //
 // Sass "@use ... with (...)" configura un modulo SOLO alla sua prima
@@ -16,7 +16,21 @@
 // `@use "devextreme/scss/bundles/dx.light" with (...)`: quel bundle
 // configura già "colors" al suo interno, e Sass vieta di configurare
 // lo stesso modulo due volte.
-@use 'devextreme/scss/widgets/generic/colors' with (
+//
+// Bundle GEMELLO: theme-dark.scss, identico tranne $color: 'dark'.
+// Nessuno dei due viene iniettato in automatico in index.html (vedi
+// "inject": false in angular.json) — è index.html stesso a caricarli
+// entrambi con <link media="(prefers-color-scheme: ...)">, così è il
+// sistema operativo dell'utente a decidere quale dei due il browser
+// applica davvero, senza bisogno di alcun toggle o classe scritta da
+// noi.
+// "as colors": ci serve un nome per riferirci alle variabili risolte
+// (base-accent, base-bg, ...) più sotto, sia per configurare
+// "tabs-colors" sia per il ponte verso le nostre custom property CSS —
+// alias e "with(...)" vanno nella stessa riga: due @use separati dello
+// stesso file (uno con "with", uno "as colors" bare) collidono comunque
+// sul namespace di default ("colors" in entrambi i casi).
+@use 'devextreme/scss/widgets/generic/colors' as colors with (
   $color: 'light',
 );
 @use 'devextreme/scss/widgets/generic/sizes' with (
@@ -27,15 +41,16 @@
   $size: 'default',
 );
 // "as tabs-colors": senza un alias esplicito Sass userebbe di default
-// il namespace "colors" (ultimo pezzo del path) — già preso da
-// "widgets/generic/colors" qui sopra, stesso nome di file. Non ci serve
-// comunque riferirci al namespace, è solo per configurare il modulo.
+// il namespace "colors" (ultimo pezzo del path) — già preso dal file
+// sopra, stesso nome base. Non ci serve comunque riferirci al
+// namespace, è solo per configurare il modulo.
 @use 'devextreme/scss/widgets/generic/tabs/variables/colors' as tabs-colors with (
-  // Di base, nel tema "light", il testo del tab selezionato resta
-  // $base-text-color (nero-ish) — il tema non lo lega a $base-accent.
-  // Qui lo alliniamo esplicitamente all'accent del tema (stesso blu
-  // del bottone "Aggiungi task", #337ab7 di default per "light").
-  $tabs-tab-selected-color: #337ab7,
+  // Di base il testo del tab selezionato resta $base-text-color — il
+  // tema non lo lega a $base-accent. Qui lo alliniamo esplicitamente,
+  // leggendo colors.$base-accent invece di un hex fisso: così la stessa
+  // riga produce il blu giusto per "light" e l'azzurro giusto per
+  // "dark" (in theme-dark.scss), senza doverla duplicare per colore.
+  $tabs-tab-selected-color: colors.$base-accent,
 );
 @use 'devextreme/scss/widgets/generic/typography';
 @use 'devextreme/scss/widgets/generic/icons';
@@ -47,3 +62,18 @@
 @use 'devextreme/scss/widgets/base/draggable';
 @use 'devextreme/scss/widgets/base/ui';
 @use 'devextreme/scss/widgets/generic';
+
+// Ponte verso il CSS "nostro" (styles.scss/app.scss/users.scss): invece
+// di duplicare colori in regole @media (prefers-color-scheme: dark)
+// sparse nei nostri file, esponiamo qui le variabili di TEMA già
+// risolte come custom property CSS. Il nostro CSS le legge con var()
+// e basta — cambia automaticamente con qualunque foglio di stile
+// (questo o theme-dark.scss) il browser stia applicando, senza una
+// singola riga o colore hardcoded nostro.
+:root {
+  --app-bg: #{colors.$base-bg};
+  --app-text: #{colors.$base-text-color};
+  --app-label: #{colors.$base-label-color};
+  --app-border: #{colors.$base-border-color};
+  --app-accent: #{colors.$base-accent};
+}
